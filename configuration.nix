@@ -99,6 +99,9 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+  gcc       # 包含 gcc 和 g++
+  gnumake   # make 命令 (通常编译都需要)
+  cmake     # 可选：如果你需要 cmake
   git
   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   wget
