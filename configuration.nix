@@ -106,6 +106,10 @@
     packages = with pkgs; [
     #  thunderbird
     ];
+    openssh.authorizedKeys.keys = [
+      # 在这里粘贴你的公钥字符串 (id_ed25519.pub 的内容)
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDAufQNMpMEpuNAtV6YLgK/5y7hIu/dQU16H52/rPUCvXSufnVIkfP66a07/lH37BpQa+0NEpHnTSrATkXUm7yE+9XWcsUzRnWp48fKeC7AmfI3ObZcAucz/p/87moJh/bW/UxH5h8EFWaYJirM93VqBCf+XpkDd9P1tt4QVMyrYmQHEsNtg1QpKStyjLpDNoowG/9EPA2EJdusf8vBCiFn6XzxKJfModfDt7ObSFhcZrc8XYlknuaddlMPycOHS6URm8ciYlXzYcfRkjT+QTEFKTZazYAFSDF53OXikaPlRdhhXfdXIS5XyD1EI/9Sg/EHtRyIWZjocD4DnRC20B0hANaFcs+5/Qwt2mH6Gb5zsHNPbHlKO0M0bh7HMPpxr9BZEn8cObn19/SnSuJCejuBuSnRxuw6q2xPtlqr8k6EhTDBzChtTgHxkdcOerCMxVZXN7qKVNeneW1dBAwnfu6lVOLqaBOazQ43NDytlYLt5x5rCtXWMeXwVKgnHFSJr1D5Jui48/odEleAXFzeYZCf3+E0ejnCQxRbprarsuxJsW8drcB8+gk1X6Wrjn4RXR/lxU8fQSSI0LeJWtEbWh4x8fhgAjoosS+t4Gnsdt6XA1pyvGiAQbauto42GrzGN1Q7tc/S8KM6ORyl60FyQstJefXpfopQNzoPdyVnGHrP4w== ccteym@gmail.com" 
+    ];
   };
 
   # Install firefox.
