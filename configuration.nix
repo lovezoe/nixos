@@ -105,6 +105,8 @@
   git
   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   wget
+  python312
+  nodejs_20
   mise
   clashmi
   ];
