@@ -10,7 +10,25 @@
       ./hardware-configuration.nix
     ];
 
+  # ... existing config ...
+  systemd.services.easytier = {
+    description = "EasyTier Network Service";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      # 指向你的配置文件路径
+      ExecStart = "${pkgs.easytier}/bin/easytier-core -d --network-name mike_net --network-secret mikepass -p tcp://public.easytier.top:11010";
+      Restart = "always";
+      User = "root";
+    };
+  };
+  
+  environment.shellAliases = {
+    rebuild = "sudo nixos-rebuild switch --flake /home/hongtou/.nixos-config";
+  };
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" "https://cache.nixos.org/" ];
 
   # Bootloader.
   boot.loader.grub.enable = true;
@@ -49,8 +67,8 @@
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -105,6 +123,7 @@
   git
   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   wget
+  easytier
   python312
   nodejs_20
   ];
