@@ -6,6 +6,9 @@
 
   # 你可以在这里安装只属于当前用户的软件
   home.packages = with pkgs; [
+    python312
+    nodejs_24
+    jq
     fastfetch   # 漂亮的系统信息展示
     htop        # 进程查看器
     flclash
