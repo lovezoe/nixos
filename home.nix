@@ -8,6 +8,7 @@
   home.packages = with pkgs; [
     fastfetch   # 漂亮的系统信息展示
     htop        # 进程查看器
+    flclash
   ];
 
   # 配置 Git (示例)

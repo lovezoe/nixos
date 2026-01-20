@@ -107,8 +107,6 @@
   wget
   python312
   nodejs_20
-  mise
-  clashmi
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
