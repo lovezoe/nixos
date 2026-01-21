@@ -127,17 +127,15 @@
   };
 
   # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  services.xserver.enable = false;
 
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
+  services.displayManager.gdm.wayland = true; # enforce Wayland session for GDM
   services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "cn";
-    variant = "";
-  };
+  # (X server disabled because using Wayland)
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -158,8 +156,8 @@
     #media-session.enable = true;
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+  # Enable touchpad support for libinput (works with Wayland)
+  services.libinput.enable = false;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.hongtou = {
