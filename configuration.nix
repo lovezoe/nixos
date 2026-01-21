@@ -113,6 +113,7 @@
 
   # Select internationalisation properties.
   i18n.defaultLocale = "zh_CN.UTF-8";
+  i18n.inputMethod.type = "fcitx5";
 
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "zh_CN.UTF-8";
@@ -191,7 +192,15 @@
     zellij
     socat
     easytier
+    flatpak
   ];
+
+  # Ensure Flathub mirror is added as a system flatpak remote during activation
+  #system.activationScripts.add-flathub = {
+  #  text = ''
+  #    ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists --system flathub https://mirrors.ustc.edu.cn/flathub --no-gpg-verify
+  #  '';
+  #};
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

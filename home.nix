@@ -26,8 +26,16 @@
     enableCompletion = true;
     # 在这里为 mise 设置 hook，让它自动生效
     initExtra = ''
-      eval "$(${pkgs.mise}/bin/mise activate bash)"
-      alias rebuild="sudo nixos-rebuild switch --flake /home/hongtou/.nixos-config"
+      rebuild() {
+        flake="/home/hongtou/.nixos-config"
+        echo "Running dry-run check..."
+        sudo nixos-rebuild switch --flake "$flake" --show-trace --dry-run || { echo "Dry-run failed, aborting"; return 1; }
+        echo "Dry-run passed. Building..."
+        sudo nixos-rebuild build --flake "$flake" || { echo "Build failed, aborting"; return 1; }
+        echo "Build succeeded. Switching..."
+        sudo nixos-rebuild switch --flake "$flake" || { echo "Switch failed"; return 1; }
+        echo "Rebuild complete."
+      }
     '';
   };
 
