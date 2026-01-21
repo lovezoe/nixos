@@ -9,6 +9,8 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+
+  boot.initrd.kernelModules = [ "amdgpu" ];
   
   # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
   programs.nix-ld.enable = true;

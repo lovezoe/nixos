@@ -16,11 +16,9 @@
   ];
 
   # 配置 Git (示例)
-  programs.git = {
-    enable = true;
-    userName = "hongtou";
-    userEmail = "your-email@example.com";
-  };
+  programs.git.enable = true;
+  programs.git.settings.user.name = "mike";
+  programs.git.settings.user.email = "ccteym@gmail.com";
 
   # 配置 Bash 或 Zsh
   programs.bash = {
