@@ -10,6 +10,9 @@
       ./hardware-configuration.nix
     ];
 
+  # Bootloader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.kernelModules = [ "amdgpu" ];
   
   # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
@@ -62,11 +65,6 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" "https://cache.nixos.org/" ];
-
-  # Bootloader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/nvme0n1";
-  boot.loader.grub.useOSProber = true;
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
