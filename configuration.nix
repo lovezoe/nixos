@@ -34,6 +34,28 @@
       User = "root";
     };
   };
+
+  systemd.services.zellij-web = {
+    description = "Zellij Web (user hongtou)";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.zellij}/bin/zellij web --port 8081";
+      Restart = "always";
+      User = "hongtou";
+    };
+  };
+
+  systemd.services.nc-forward = {
+    description = "Netcat port forward 8081->0.0.0.0:8082 (user hongtou)";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.netcat}/bin/nc :8081:0.0.0.0:8082";
+      Restart = "always";
+      User = "hongtou";
+    };
+  };
   
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -130,13 +152,15 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  gcc       # 包含 gcc 和 g++
-  gnumake   # make 命令 (通常编译都需要)
-  cmake     # 可选：如果你需要 cmake
-  git
-  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  wget
-  easytier
+    gcc       # 包含 gcc 和 g++
+    gnumake   # make 命令 (通常编译都需要)
+    cmake     # 可选：如果你需要 cmake
+    git
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+    zellij
+    netcat
+    easytier
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

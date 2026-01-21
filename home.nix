@@ -12,8 +12,6 @@
     fastfetch   # 漂亮的系统信息展示
     htop        # 进程查看器
     flclash
-    zellij
-    netcat
     httpie
   ];
 
