@@ -46,12 +46,12 @@
     };
   };
 
-  systemd.services.nc-forward = {
-    description = "Netcat port forward 8081->0.0.0.0:8082 (user hongtou)";
+  systemd.services.socat-forward = {
+    description = "Socat port forward 8082->127.0.0.1:8081 (user hongtou)";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.netcat}/bin/nc :8081:0.0.0.0:8082";
+      ExecStart = "${pkgs.socat}/bin/socat TCP-LISTEN:8082,fork,reuseaddr,bind=0.0.0.0 TCP:127.0.0.1:8081";
       Restart = "always";
       User = "hongtou";
     };
@@ -159,7 +159,7 @@
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
     zellij
-    netcat
+    socat
     easytier
   ];
 
@@ -177,10 +177,10 @@
   services.openssh.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 22 8082 11010 ];
+  networking.firewall.allowedUDPPorts = [ 11010 ];
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
