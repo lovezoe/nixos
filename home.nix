@@ -13,6 +13,8 @@
     htop        # 进程查看器
     flclash
     zellij
+    netcat
+    httpie
   ];
 
   # 配置 Git (示例)
@@ -29,6 +31,7 @@
     # 在这里为 mise 设置 hook，让它自动生效
     initExtra = ''
       eval "$(${pkgs.mise}/bin/mise activate bash)"
+      alias rebuild="sudo nixos-rebuild switch --flake /home/hongtou/.nixos-config"
     '';
   };
 

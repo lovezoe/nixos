@@ -9,6 +9,18 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+  
+  # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
+  programs.nix-ld.enable = true;
+
+  # 配置 Copilot 和其他 VSCode 插件可能需要的库
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib  # 包含 libstdc++ (C++ 标准库)
+    zlib              # 压缩库
+    glib              # 基础库
+    openssl           # 加密库
+    icu               # Unicode 支持
+  ];
 
   # ... existing config ...
   systemd.services.easytier = {
@@ -23,9 +35,6 @@
     };
   };
   
-  environment.shellAliases = {
-    rebuild = "sudo nixos-rebuild switch --flake /home/hongtou/.nixos-config";
-  };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" "https://cache.nixos.org/" ];
