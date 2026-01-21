@@ -14,6 +14,38 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.kernelModules = [ "amdgpu" ];
+
+  # --- 电源策略：彻底禁止休眠与睡眠 (修正版) ---
+
+  # 1. 禁用 Systemd 的睡眠目标 (保持不变，这是最核心的)
+  systemd.targets.sleep.enable = false;
+  systemd.targets.suspend.enable = false;
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
+
+  # 2. 配置 Logind 行为
+  services.logind = {
+    # 移除所有旧的顶级选项 (如 lidSwitch)，避免 "renamed" 警告
+    # 所有的配置现在都放进 settings.Login 下面
+    settings = {
+      Login = {
+        # 对应 logind.conf 中的 [Login] 部分
+        
+        # 物理按键行为
+        HandlePowerKey = "poweroff";
+        HandleSuspendKey = "ignore";
+        HandleHibernateKey = "ignore";
+        
+        # 合盖行为 (替代之前的 services.logind.lidSwitch)
+        HandleLidSwitch = "ignore";
+        HandleLidSwitchExternalPower = "ignore";
+        
+        # 闲置行为
+        IdleAction = "ignore";
+        IdleActionSec = "0";
+      };
+    };
+  };
   
   # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
   programs.nix-ld.enable = true;
