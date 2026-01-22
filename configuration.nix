@@ -60,15 +60,19 @@
   ];
 
   # ... existing config ...
-  systemd.services.easytier = {
-    description = "EasyTier Network Service";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      # 指向你的配置文件路径
-      ExecStart = "${pkgs.easytier}/bin/easytier-core -d --network-name mike_net --network-secret mikepass -p tcp://public.easytier.top:11010";
-      Restart = "always";
-      User = "root";
+  services.easytier = {
+    enable = true;
+    instances = {
+      default = {
+        enable = true;
+        settings = {
+          network_name = "mike_net";
+          network_secret = "mikepass";
+          instance_name = "default";
+          dhcp = true;
+          peers = [ "tcp://public.easytier.top:11010" ];
+        };
+      };
     };
   };
 
@@ -191,7 +195,6 @@
     wget
     zellij
     socat
-    easytier
     flatpak
   ];
 
@@ -216,8 +219,8 @@
   services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 8082 11010 ];
-  networking.firewall.allowedUDPPorts = [ 11010 ];
+  networking.firewall.allowedTCPPorts = [ 22 8082 11010 11011 ];
+  networking.firewall.allowedUDPPorts = [ 11010 11011 ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
 
