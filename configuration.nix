@@ -15,38 +15,50 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.kernelModules = [ "amdgpu" ];
 
-  # --- 电源策略：彻底禁止休眠与睡眠 (修正版) ---
-
-  # 1. 禁用 Systemd 的睡眠目标 (保持不变，这是最核心的)
+  # 1. 禁用 Systemd 的睡眠目标
+  # 在 NixOS 中，将 enable 设为 false 会阻止生成这些 target 的关联，
+  # 从而达到类似 mask 的效果 (无法被启动)。
   systemd.targets.sleep.enable = false;
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
 
-  # 2. 配置 Logind 行为
+  # 2. Logind 设置 (你之前已经改好的正确版本)
   services.logind = {
-    # 移除所有旧的顶级选项 (如 lidSwitch)，避免 "renamed" 警告
-    # 所有的配置现在都放进 settings.Login 下面
     settings = {
       Login = {
-        # 对应 logind.conf 中的 [Login] 部分
-        
-        # 物理按键行为
         HandlePowerKey = "poweroff";
         HandleSuspendKey = "ignore";
         HandleHibernateKey = "ignore";
-        
-        # 合盖行为 (替代之前的 services.logind.lidSwitch)
         HandleLidSwitch = "ignore";
         HandleLidSwitchExternalPower = "ignore";
-        
-        # 闲置行为
         IdleAction = "ignore";
         IdleActionSec = "0";
       };
     };
   };
-  
+
+  # 3. UPower 设置 (关键！解决 "The system will suspend now" 问题)
+  # 那个通知是 UPower 发出的，必须在这里按住它的手。
+  services.upower = {
+    enable = true;
+    
+    # 当 UPower 认为电量危急时 (Critical)，执行什么动作？
+    # 默认是 HybridSleep 或 PowerOff，我们改成 Ignore (忽略)。
+    allowRiskyCriticalPowerAction = true;
+    criticalPowerAction = "Ignore";
+
+    # 将所有触发阈值调到最低，防止误判
+    percentageLow = 0;
+    percentageCritical = 0;
+    percentageAction = 0;
+    
+    # 也可以选择按时间触发的阈值调零
+    timeLow = 0;
+    timeCritical = 0;
+    timeAction = 0;
+  };
+ 
   # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
   programs.nix-ld.enable = true;
 
@@ -103,7 +115,7 @@
   nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" "https://cache.nixos.org/" ];
 
   networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -111,6 +123,8 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+
+  networking.interfaces.enp6s0.wakeOnLan.enable = true;
 
   # Set your time zone.
   time.timeZone = "Asia/Shanghai";
@@ -164,6 +178,22 @@
   # Enable touchpad support for libinput (works with Wayland)
   services.libinput.enable = false;
 
+  # --- 启用 Flatpak 服务模块 ---
+  # 这会自动配置 systemd 服务、Polkit 策略和 D-Bus
+  services.flatpak.enable = true;
+
+  # --- 🟡 Niri/Wayland 用户必填：XDG Portal ---
+  # Flatpak 强依赖 XDG Portal 来穿透沙盒与系统交互（打开文件、链接等）
+  # 之前的配置可能没加这个，会导致 Flatpak 应用无法启动或无法安装
+  xdg.portal = {
+    enable = true;
+    # 安装 GTK portal 作为通用后端 (对非 GNOME/KDE 环境兼容性最好)
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    
+    # 告诉 Portal 系统，对于所有桌面环境，默认使用 GTK 实现
+    config.common.default = [ "gtk" ];
+  };
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.hongtou = {
     isNormalUser = true;
@@ -198,12 +228,6 @@
     flatpak
   ];
 
-  # Ensure Flathub mirror is added as a system flatpak remote during activation
-  #system.activationScripts.add-flathub = {
-  #  text = ''
-  #    ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists --system flathub https://mirrors.ustc.edu.cn/flathub --no-gpg-verify
-  #  '';
-  #};
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
