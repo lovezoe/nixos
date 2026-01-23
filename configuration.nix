@@ -14,50 +14,66 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.kernelModules = [ "amdgpu" ];
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
 
-  # 1. 禁用 Systemd 的睡眠目标
-  # 在 NixOS 中，将 enable 设为 false 会阻止生成这些 target 的关联，
-  # 从而达到类似 mask 的效果 (无法被启动)。
-  systemd.targets.sleep.enable = false;
-  systemd.targets.suspend.enable = false;
-  systemd.targets.hibernate.enable = false;
-  systemd.targets.hybrid-sleep.enable = false;
+  # --- 1. 启动参数 (核心限制) ---
+  boot.kernelParams = [
+    # [核心降耗] 禁止超线程 (SMT)
+    # 强制 CPU 只使用物理核心，从 24 线程降为 12 线程
+    "nosmt"
+    
+    # [防死机] 限制 CPU 睡眠深度
+    # 配合 BIOS 设置，防止老主板在 CPU 唤醒瞬间电压不稳导致重启
+    "processor.max_cstate=1"
+    "intel_idle.max_cstate=0"
+    
+    # [显卡稳定] 禁止 PCIe 节能 (防止 RX 5700 XT 掉驱动)
+    "pcie_aspm=off"
+    "amdgpu.ppfeaturemask=0xffffffff"
+  ];
 
-  # 2. Logind 设置 (你之前已经改好的正确版本)
-  services.logind = {
-    settings = {
-      Login = {
-        HandlePowerKey = "poweroff";
-        HandleSuspendKey = "ignore";
-        HandleHibernateKey = "ignore";
-        HandleLidSwitch = "ignore";
-        HandleLidSwitchExternalPower = "ignore";
-        IdleAction = "ignore";
-        IdleActionSec = "0";
-      };
+  # --- 2. 强制禁止睿频 (Turbo Boost) ---
+  # 虽然 BIOS 里关了，但为了防止 Linux 内核自己接管电压，我们通过服务再次锁死
+  systemd.services.disable-turbo = {
+    description = "Disable Intel Turbo Boost (Software Lock)";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      # 向内核接口写入 1，强制禁止睿频
+      ExecStart = "${pkgs.bash}/bin/sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo || true'";
     };
   };
 
-  # 3. UPower 设置 (关键！解决 "The system will suspend now" 问题)
-  # 那个通知是 UPower 发出的，必须在这里按住它的手。
+  # --- 3. CPU 频率策略 (节能优先) ---
+  # 将调度器设为 "powersave" (节能)
+  # 在 Intel CPU 上，这通常意味着倾向于运行在最低频率，除非负载非常高
+  powerManagement.cpuFreqGovernor = "powersave";
+  
+  # 如果你想进一步限制最大频率 (比如锁死在 2.0GHz)，可以解开下面这行的注释
+  # 并在 systemPackages 里安装 linuxPackages.cpupower
+  # boot.postBootCommands = ''
+  #   ${pkgs.linuxPackages.cpupower}/bin/cpupower frequency-set -u 2.0GHz
+  # '';
+
+  # --- 4. 显卡低功耗模式 ---
+  # 强制 RX 5700 XT 运行在低功耗状态，牺牲性能换取不关机
+  systemd.services.force-gpu-low = {
+    description = "Force AMD GPU Low Power";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/sh -c 'echo low > /sys/class/drm/card0/device/power_dpm_force_performance_level || true'";
+    };
+  };
+  # 只要不乱关机，UPower 正常开启即可
   services.upower = {
     enable = true;
-    
-    # 当 UPower 认为电量危急时 (Critical)，执行什么动作？
-    # 默认是 HybridSleep 或 PowerOff，我们改成 Ignore (忽略)。
-    allowRiskyCriticalPowerAction = true;
     criticalPowerAction = "Ignore";
-
-    # 将所有触发阈值调到最低，防止误判
-    percentageLow = 0;
-    percentageCritical = 0;
-    percentageAction = 0;
-    
-    # 也可以选择按时间触发的阈值调零
-    timeLow = 0;
-    timeCritical = 0;
-    timeAction = 0;
   };
+  ##
  
   # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
   programs.nix-ld.enable = true;
