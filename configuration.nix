@@ -71,7 +71,6 @@
   # 只要不乱关机，UPower 正常开启即可
   services.upower = {
     enable = true;
-    criticalPowerAction = "Ignore";
   };
   ##
  
