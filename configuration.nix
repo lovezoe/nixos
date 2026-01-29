@@ -14,6 +14,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.kernelModules = [ "coretemp" "nct6775" ];
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
@@ -73,7 +74,7 @@
     enable = true;
   };
   ##
- 
+  
   # --- 解决动态链接库问题 (Fix "Could not start dynamically linked executable") ---
   programs.nix-ld.enable = true;
 
@@ -85,7 +86,7 @@
     openssl           # 加密库
     icu               # Unicode 支持
   ];
-
+ 
   # ... existing config ...
   services.easytier = {
     enable = true;
@@ -229,6 +230,11 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  environment.variables = {
+    "HSA_OVERRIDE_GFX_VERSION" = "10.3.0";
+    "ROC_ENABLE_PRE_VEGA" = "1"; # 保险起见开启
+  };
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -241,6 +247,8 @@
     zellij
     socat
     flatpak
+    rocmPackages.rocminfo
+    rocmPackages.rocm-smi
   ];
 
 

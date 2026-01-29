@@ -8,6 +8,8 @@
   home.packages = with pkgs; [
     python312
     nodejs_24
+    lm_sensors
+    btop
     jq
     fastfetch   # 漂亮的系统信息展示
     htop        # 进程查看器
@@ -17,7 +19,7 @@
     podman
     podman-compose
   ];
-
+  
   # 配置 Git (示例)
   programs.git.enable = true;
   programs.git.settings.user.name = "mike";
