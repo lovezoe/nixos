@@ -71,30 +71,42 @@
     };
   };
 
-  # --- 4. 虚拟化支持 (新增部分) ---
+  virtualisation.containers.enable = true;
   virtualisation.podman = {
     enable = true;
-    dockerCompat = true; # 让 docker 命令指向 podman
-    defaultNetwork.settings.dns_enabled = true;
+    dockerCompat = true; # 让 podman 命令兼容 docker 别名
   };
+  virtualisation.containers.registries.search = [ "docker.io" "quay.io" "gcr.io" ];
 
-  systemd.services.zellij-web = {
-    description = "Zellij Web (user hongtou)";
+#  systemd.services.zellij-web = {
+#    description = "Zellij Web (user hongtou)";
+#    after = [ "network.target" ];
+#    wantedBy = [ "multi-user.target" ];
+#    serviceConfig = {
+#      ExecStart = "${pkgs.zellij}/bin/zellij web --port 8081";
+#      Restart = "always";
+#      User = "hongtou";
+#    };
+#  };
+#
+#  systemd.services.socat-forward = {
+#    description = "Socat port forward 8082->127.0.0.1:8081 (user hongtou)";
+#    after = [ "network.target" ];
+#    wantedBy = [ "multi-user.target" ];
+#    serviceConfig = {
+#      ExecStart = "${pkgs.socat}/bin/socat TCP-LISTEN:8082,fork,reuseaddr,bind=0.0.0.0 TCP:127.0.0.1:8081";
+#      Restart = "always";
+#      User = "hongtou";
+#    };
+#  };
+  
+  systemd.services.opencode = {
+    description = "opencode (user hongtou)";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
+    environment = { OPENCODE_SERVER_PASSWORD = "realpass"; };
     serviceConfig = {
-      ExecStart = "${pkgs.zellij}/bin/zellij web --port 8081";
-      Restart = "always";
-      User = "hongtou";
-    };
-  };
-
-  systemd.services.socat-forward = {
-    description = "Socat port forward 8082->127.0.0.1:8081 (user hongtou)";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.socat}/bin/socat TCP-LISTEN:8082,fork,reuseaddr,bind=0.0.0.0 TCP:127.0.0.1:8081";
+      ExecStart = "${pkgs.opencode}/bin/opencode web --hostname 0.0.0.0 --port 4096";
       Restart = "always";
       User = "hongtou";
     };
@@ -220,6 +232,7 @@
     wget
     zellij
     socat
+    opencode
     flatpak
     rocmPackages.rocminfo
     rocmPackages.rocm-smi
@@ -240,7 +253,7 @@
   services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 8082 11010 11011 ];
+  networking.firewall.allowedTCPPorts = [ 22 4096 8082 11010 11011 ];
   networking.firewall.allowedUDPPorts = [ 11010 11011 ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;

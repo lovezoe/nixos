@@ -16,8 +16,6 @@
     flclash
     httpie
     vscode
-    podman
-    podman-compose
   ];
   
   # 配置 Git (示例)
