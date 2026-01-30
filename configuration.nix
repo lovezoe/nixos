@@ -18,6 +18,9 @@
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
+    extraPackages = with pkgs; [
+      rocmPackages.clr.icd
+    ];
   };
 
   # --- 1. 启动参数 (核心限制) ---
@@ -66,6 +69,13 @@
         };
       };
     };
+  };
+
+  # --- 4. 虚拟化支持 (新增部分) ---
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true; # 让 docker 命令指向 podman
+    defaultNetwork.settings.dns_enabled = true;
   };
 
   systemd.services.zellij-web = {
@@ -178,7 +188,7 @@
   users.users.hongtou = {
     isNormalUser = true;
     description = "hongtou";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "render" "podman"];
     packages = with pkgs; [
     #  thunderbird
     ];
